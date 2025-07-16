@@ -90,7 +90,8 @@ Return the response in the exact JSON format specified in the schema.`;
     });
 
     const result = JSON.parse(response.choices[0].message.content);
-    return randomizeExclamation(result);
+    result.meta_description = randomizeExclamation(result.meta_description);
+    return result;
   } catch (error) {
     console.error('Error generating structured response:', error.message);
     // Return fallback response in correct format
