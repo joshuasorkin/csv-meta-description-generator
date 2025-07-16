@@ -1,0 +1,25 @@
+{
+  "name": "csv-meta-description-generator",
+  "version": "1.0.0",
+  "description": "Generate meta descriptions for product listings using ChatGPT",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "csv",
+    "meta-description",
+    "seo",
+    "chatgpt",
+    "openai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^17.2.0",
+    "openai": "^5.9.2"
+  }
+}
