@@ -44,10 +44,25 @@ const responseSchema = {
   additionalProperties: false
 };
 
+//randomly remove all but one exclamation point, due to bot's excessive use of them
+function randomizeExclamation(str) {
+  const indices = [...str].map((char, i) => char === '!' ? i : -1).filter(i => i !== -1);
+
+  // If there's 0 or 1 exclamation mark, return the string as-is
+  if (indices.length <= 1) return str;
+
+  const keepIndex = indices[Math.floor(Math.random() * indices.length)];
+
+  return [...str].map((char, i) => {
+    if (char === '!' && i !== keepIndex) return '.';
+    return char;
+  }).join('');
+}
+
 // Function to generate structured response using ChatGPT
 async function generateStructuredResponse(id, productTitle, productDescription, productType) {
   try {
-    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, include the product name, highlight key benefits, and encourage clicks. Consider the product type/category when crafting the description.
+    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, include the product name, highlight key benefits, and suggest fun ways to use the product. Consider the product type/category when crafting the description.
 
 Product Title: ${productTitle}
 Product Description: ${productDescription}
@@ -71,11 +86,11 @@ Return the response in the exact JSON format specified in the schema.`;
           strict: true
         }
       },
-      temperature: 0.7
+      temperature: 0.95
     });
 
     const result = JSON.parse(response.choices[0].message.content);
-    return result;
+    return randomizeExclamation(result);
   } catch (error) {
     console.error('Error generating structured response:', error.message);
     // Return fallback response in correct format
@@ -88,6 +103,10 @@ Return the response in the exact JSON format specified in the schema.`;
     };
   }
 }
+
+
+
+
 
 // Function to process CSV in batches
 async function processBatch(batch) {
@@ -138,8 +157,8 @@ async function processCSV() {
 
     // Process in batches
     const results = [];
-    for (let i = 0; i < products.length; i += BATCH_SIZE) {
-    //for (let i = 0; i < 3; i += BATCH_SIZE) {
+    //for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    for (let i = 0; i < 10; i += BATCH_SIZE) {
       const batch = products.slice(i, i + BATCH_SIZE);
       console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(products.length / BATCH_SIZE)}`);
       
