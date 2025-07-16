@@ -15,48 +15,91 @@ const OUTPUT_CSV_PATH = 'products_with_meta.csv';
 const BATCH_SIZE = 5; // Process 5 items at a time to avoid rate limits
 const DELAY_BETWEEN_BATCHES = 1000; // 1 second delay between batches
 
-// Function to generate meta description using ChatGPT
-async function generateMetaDescription(productTitle, productDescription) {
+// Define the response schema
+const responseSchema = {
+  type: "object",
+  properties: {
+    id: {
+      type: "string",
+      description: "The Shopify product ID"
+    },
+    product_title: {
+      type: "string",
+      description: "The original product title"
+    },
+    product_description: {
+      type: "string", 
+      description: "The original product description"
+    },
+    product_type: {
+      type: "string",
+      description: "The product category/type"
+    },
+    meta_description: {
+      type: "string",
+      description: "SEO-optimized meta description (150-160 characters)"
+    }
+  },
+  required: ["id", "product_title", "product_description", "product_type", "meta_description"],
+  additionalProperties: false
+};
+
+// Function to generate structured response using ChatGPT
+async function generateStructuredResponse(id, productTitle, productDescription, productType) {
   try {
-    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, include the product name, highlight key benefits, and encourage clicks.
+    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, include the product name, highlight key benefits, and encourage clicks. Consider the product type/category when crafting the description.
 
 Product Title: ${productTitle}
 Product Description: ${productDescription}
+Product Type: ${productType}
 
-Return only the meta description text, no additional formatting or explanation.`;
+Return the response in the exact JSON format specified in the schema.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini', // Use gpt-4o-mini or gpt-4o for structured outputs
       messages: [
         {
           role: 'user',
           content: prompt
         }
       ],
-      max_tokens: 100,
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "product_meta_response",
+          schema: responseSchema,
+          strict: true
+        }
+      },
       temperature: 0.7
     });
 
-    return response.choices[0].message.content.trim();
+    const result = JSON.parse(response.choices[0].message.content);
+    return result;
   } catch (error) {
-    console.error('Error generating meta description:', error.message);
-    return 'Meta description generation failed';
+    console.error('Error generating structured response:', error.message);
+    // Return fallback response in correct format
+    return {
+      id: id,
+      product_title: productTitle,
+      product_description: productDescription,
+      product_type: productType,
+      meta_description: 'Meta description generation failed'
+    };
   }
 }
 
 // Function to process CSV in batches
 async function processBatch(batch) {
   const promises = batch.map(async (row) => {
-    const metaDescription = await generateMetaDescription(
-      row.product_title, 
-      row.product_description
+    const result = await generateStructuredResponse(
+      row.id,
+      row.title, 
+      row.body_html,
+      row.type
     );
     
-    return {
-      product_title: row.product_title,
-      product_description: row.product_description,
-      meta_description: metaDescription
-    };
+    return result;
   });
 
   return Promise.all(promises);
@@ -95,7 +138,8 @@ async function processCSV() {
 
     // Process in batches
     const results = [];
-    for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    //for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    for (let i = 0; i < 3; i += BATCH_SIZE) {
       const batch = products.slice(i, i + BATCH_SIZE);
       console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(products.length / BATCH_SIZE)}`);
       
@@ -112,9 +156,11 @@ async function processCSV() {
     const csvWriter = createCsvWriter({
       path: OUTPUT_CSV_PATH,
       header: [
-        { id: 'product_title', title: 'product_title' },
-        { id: 'product_description', title: 'product_description' },
-        { id: 'meta_description', title: 'meta_description' }
+        { id: 'id', title: 'ID' },
+        { id: 'product_title', title: 'Title' },
+        { id: 'product_description', title: 'Body HTML' },
+        { id: 'product_type', title: 'Type' },
+        { id: 'meta_description', title: 'Meta Description' }
       ]
     });
 
@@ -131,4 +177,4 @@ if (require.main === module) {
   processCSV();
 }
 
-module.exports = { processCSV, generateMetaDescription };
+module.exports = { processCSV, generateStructuredResponse };
