@@ -71,7 +71,7 @@ Product Type: ${productType}
 Return the response in the exact JSON format specified in the schema.`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use gpt-4o-mini or gpt-4o for structured outputs
+      model: 'gpt-4o', // Use gpt-4o-mini or gpt-4o for structured outputs
       messages: [
         {
           role: 'user',
