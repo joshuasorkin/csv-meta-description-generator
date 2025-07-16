@@ -62,7 +62,7 @@ function randomizeExclamation(str) {
 // Function to generate structured response using ChatGPT
 async function generateStructuredResponse(id, productTitle, productDescription, productType) {
   try {
-    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, include the product name, highlight key benefits, and suggest fun ways to use the product. Consider the product type/category when crafting the description.
+    const prompt = `Generate a compelling SEO meta description for this product. The meta description should be 150-160 characters, alluring, provocative, just a touch risque, include the product name, highlight key benefits, and discreetly suggest fun ways to use the product. Consider the product type/category when crafting the description.
 
 Product Title: ${productTitle}
 Product Description: ${productDescription}
@@ -86,7 +86,7 @@ Return the response in the exact JSON format specified in the schema.`;
           strict: true
         }
       },
-      temperature: 0.95
+      temperature: 0.8
     });
 
     const result = JSON.parse(response.choices[0].message.content);
