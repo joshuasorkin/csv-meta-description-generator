@@ -158,8 +158,8 @@ async function processCSV() {
 
     // Process in batches
     const results = [];
-    //for (let i = 0; i < products.length; i += BATCH_SIZE) {
-    for (let i = 0; i < 10; i += BATCH_SIZE) {
+    for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    //for (let i = 0; i < 10; i += BATCH_SIZE) {
       const batch = products.slice(i, i + BATCH_SIZE);
       console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(products.length / BATCH_SIZE)}`);
       
